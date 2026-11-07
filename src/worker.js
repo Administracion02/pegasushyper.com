@@ -3,7 +3,7 @@
 // Rutas privadas:   /api/admin/*  (requieren la sesión creada con POST /api/login)
 // La contraseña vive solo en el secreto ADMIN_PASSWORD de Cloudflare.
 
-const COLS = ["productos", "ventas", "campanas", "gastos", "pedidos", "fotos"];
+const COLS = ["productos", "ventas", "campanas", "gastos", "pedidos", "fotos", "clientes"];
 const DEFAULT_CFG = {
   nombre: "Pegasus Hyper", iva: false, ivaTasa: 0.13, comision: 0.04, publicidad: 0.10, margen: 0.30,
   margenMin: 0.15, empaque: 300, envio: 0, redondeo: 500, roas: 3, whatsapp: "50661611731", prefijo: "PH",
@@ -80,6 +80,95 @@ async function isAdmin(req, env) {
 }
 const cookie = (v, maxAge) => `ph_s=${v}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${maxAge}`;
 
+// ---------- customer accounts ----------
+const PBKDF2_ITER = 10000;
+const b64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
+async function hashPassword(pw, saltB64) {
+  const salt = saltB64 ? Uint8Array.from(atob(saltB64), (c) => c.charCodeAt(0)) : crypto.getRandomValues(new Uint8Array(16));
+  const key = await crypto.subtle.importKey("raw", enc.encode(pw), "PBKDF2", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt, iterations: PBKDF2_ITER }, key, 256);
+  return { hash: b64(bits), salt: b64(salt) };
+}
+async function clienteId(usuario) {
+  const d = await crypto.subtle.digest("SHA-256", enc.encode("u:" + usuario));
+  return "c_" + [...new Uint8Array(d)].slice(0, 12).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+const normUser = (u) => String(u || "").trim().toLowerCase().slice(0, 120);
+async function getDoc(db, col, id) {
+  const r = await db.prepare("SELECT data FROM docs WHERE col=? AND id=?").bind(col, id).first();
+  return r ? JSON.parse(r.data) : null;
+}
+async function custSession(env, id) {
+  const exp = Date.now() + 60 * 864e5;
+  return id + "." + exp + "." + (await hmac(env.ADMIN_PASSWORD, "c:" + id + ":" + exp));
+}
+async function currentCustomer(req, env) {
+  if (!env.ADMIN_PASSWORD) return null;
+  const m = (req.headers.get("cookie") || "").match(/(?:^|;\s*)ph_c=([^;]+)/);
+  if (!m) return null;
+  const [id, exp, sig] = decodeURIComponent(m[1]).split(".");
+  if (!id || !exp || !sig || +exp < Date.now()) return null;
+  if (!safeEqual(sig, await hmac(env.ADMIN_PASSWORD, "c:" + id + ":" + exp))) return null;
+  const c = await getDoc(env.DB, "clientes", id);
+  return c ? { id, ...c } : null;
+}
+const custCookie = (v, maxAge) => `ph_c=${v}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`;
+const publicCustomer = (c) => ({ usuario: c.usuario, nombre: c.nombre || "", telefono: c.telefono || "", direccion: c.direccion || "" });
+
+async function cuenta(req, env, path) {
+  const db = env.DB;
+  if (!env.ADMIN_PASSWORD) return json({ error: "La tienda todavía no está configurada" }, 503);
+  let b = {};
+  if (req.method !== "GET") { try { b = await req.json(); } catch {} }
+  const s = (v, n) => String(v ?? "").trim().slice(0, n);
+  if (path === "/api/cuenta/registro" && req.method === "POST") {
+    const usuario = normUser(b.usuario);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(usuario)) return json({ error: "Escriba un correo válido como usuario." }, 400);
+    if (String(b.password || "").length < 8) return json({ error: "La contraseña debe tener al menos 8 caracteres." }, 400);
+    if (!s(b.nombre, 120)) return json({ error: "Escriba su nombre." }, 400);
+    if (!b.acepta) return json({ error: "Debe aceptar el uso de sus datos para crear la cuenta." }, 400);
+    const id = await clienteId(usuario);
+    if (await getDoc(db, "clientes", id)) return json({ error: "Ya existe una cuenta con ese correo. Inicie sesión." }, 409);
+    const { hash, salt } = await hashPassword(String(b.password));
+    const now = new Date(Date.now() - 6 * 3600e3).toISOString().slice(0, 10);
+    const c = { usuario, nombre: s(b.nombre, 120), telefono: s(b.telefono, 40), direccion: s(b.direccion, 400), hash, salt, creado: now, acepta: now };
+    await putDoc(db, "clientes", id, c);
+    return json({ ok: true, cliente: publicCustomer(c) }, 200, { "set-cookie": custCookie(await custSession(env, id), 60 * 86400) });
+  }
+  if (path === "/api/cuenta/login" && req.method === "POST") {
+    const usuario = normUser(b.usuario);
+    const id = await clienteId(usuario);
+    const c = await getDoc(db, "clientes", id);
+    const ok = c && safeEqual((await hashPassword(String(b.password || ""), c.salt)).hash, c.hash);
+    if (!ok) { await new Promise((r) => setTimeout(r, 1000)); return json({ error: "Correo o contraseña incorrectos." }, 401); }
+    return json({ ok: true, cliente: publicCustomer(c) }, 200, { "set-cookie": custCookie(await custSession(env, id), 60 * 86400) });
+  }
+  if (path === "/api/cuenta/logout") return json({ ok: true }, 200, { "set-cookie": custCookie("", 0) });
+  const c = await currentCustomer(req, env);
+  if (!c) return json({ error: "Inicie sesión" }, 401);
+  if (path === "/api/cuenta" && req.method === "GET") {
+    const pedidos = (await listCol(db, "pedidos")).filter((p) => p.clienteId === c.id)
+      .map((p) => ({ codigo: p.codigo, fecha: p.fecha, estado: p.estado, items: (p.items || []).map((i) => ({ nombre: i.nombre, cantidad: i.cantidad, precio: i.precio })), envio: p.envio, envioCosto: p.envioCosto }))
+      .sort((a, b) => String(b.fecha + b.codigo).localeCompare(String(a.fecha + a.codigo)));
+    return json({ cliente: publicCustomer(c), pedidos });
+  }
+  if (path === "/api/cuenta" && req.method === "PUT") {
+    const { id, ...rest } = c;
+    const upd = { ...rest, nombre: s(b.nombre, 120) || rest.nombre, telefono: s(b.telefono, 40), direccion: s(b.direccion, 400) };
+    if (b.password) {
+      if (String(b.password).length < 8) return json({ error: "La contraseña debe tener al menos 8 caracteres." }, 400);
+      Object.assign(upd, await hashPassword(String(b.password)));
+    }
+    await putDoc(db, "clientes", id, upd);
+    return json({ ok: true, cliente: publicCustomer(upd) });
+  }
+  if (path === "/api/cuenta" && req.method === "DELETE") {
+    await db.prepare("DELETE FROM docs WHERE col='clientes' AND id=?").bind(c.id).run();
+    return json({ ok: true }, 200, { "set-cookie": custCookie("", 0) });
+  }
+  return json({ error: "Ruta no encontrada" }, 404);
+}
+
 // ---------- handlers ----------
 async function catalog(env) {
   const c = await getCfg(env.DB);
@@ -110,11 +199,13 @@ async function createOrder(req, env) {
   const env0 = (c.envios || []).find((e) => e.n === b.envio) || (c.envios || [])[0] || { n: "", c: 0 };
   const pago = (c.pagos || []).includes(b.pago) ? b.pago : (c.pagos || [""])[0];
   const codigo = /^[A-Z]{1,5}-\d{4}-\d{3}$/.test(String(b.codigo || "")) ? b.codigo : (c.prefijo || "PH") + "-" + Date.now().toString().slice(-7);
+  const cli = await currentCustomer(req, env);
   const now = new Date(Date.now() - 6 * 3600e3); // Costa Rica (UTC-6)
   const pedido = {
     codigo, fecha: now.toISOString().slice(0, 10), estado: "nuevo", canal: "Catálogo",
     cliente: s(b.cliente, 120), telefono: s(b.telefono, 40), direccion: s(b.direccion, 400), notas: s(b.notas, 400),
     envio: env0.n, envioCosto: num(env0.c), pago, items: lines, origen: "web",
+    ...(cli ? { clienteId: cli.id, clienteUsuario: cli.usuario } : {}),
   };
   await putDoc(env.DB, "pedidos", newId(), pedido);
   const total = lines.reduce((a, l) => a + l.cantidad * l.precio, 0) + pedido.envioCosto;
@@ -136,6 +227,7 @@ async function admin(req, env, path) {
   if (path === "/api/admin/all" && req.method === "GET") {
     const out = { cfg: await getCfg(db) };
     for (const c of ["productos", "ventas", "campanas", "gastos", "pedidos"]) out[c] = await listCol(db, c);
+    out.clientes = (await listCol(db, "clientes")).map(({ hash, salt, ...c }) => c);
     return json(out);
   }
   if (path === "/api/admin/config" && req.method === "PUT") {
@@ -147,15 +239,24 @@ async function admin(req, env, path) {
     const data = await req.json();
     let n = 0;
     if (data.cfg) { await putDoc(db, "tienda", "config", { ...DEFAULT_CFG, ...data.cfg }); n++; }
-    for (const c of COLS) for (const d of Array.isArray(data[c]) ? data[c] : []) {
+    for (const c of COLS.filter((x) => x !== "clientes")) for (const d of Array.isArray(data[c]) ? data[c] : []) {
       const { id, _u, ...rest } = d;
       await putDoc(db, c, String(id || newId()), rest); n++;
     }
     return json({ ok: true, importados: n });
   }
+  const rs = path.match(/^\/api\/admin\/clientes\/([\w]+)\/reset$/);
+  if (rs && req.method === "POST") {
+    const c = await getDoc(db, "clientes", rs[1]);
+    if (!c) return json({ error: "Cliente no encontrado" }, 404);
+    const temp = "PH-" + [...crypto.getRandomValues(new Uint8Array(4))].map((b) => b.toString(36).padStart(2, "0")).join("").toUpperCase().slice(0, 6);
+    await putDoc(db, "clientes", rs[1], { ...c, ...(await hashPassword(temp)) });
+    return json({ ok: true, temporal: temp });
+  }
   const m = path.match(/^\/api\/admin\/doc\/([a-z]+)(?:\/([\w\-.:@+~]+))?$/);
   if (m && COLS.includes(m[1])) {
     const [, col, id] = m;
+    if (col === "clientes" && req.method !== "DELETE") return json({ error: "Use las acciones de clientes" }, 400);
     if (req.method === "POST" && !id) { const nid = newId(); await putDoc(db, col, nid, await req.json()); return json({ ok: true, id: nid }); }
     if (req.method === "PUT" && id) { const { id: _x, _u, ...data } = await req.json(); await putDoc(db, col, id, data); return json({ ok: true, id }); }
     if (req.method === "DELETE" && id) { await db.prepare("DELETE FROM docs WHERE col=? AND id=?").bind(col, id).run(); return json({ ok: true }); }
@@ -183,6 +284,7 @@ export default {
         return json({ ok: true }, 200, { "set-cookie": cookie(await makeSession(env), SESSION_DAYS * 86400) });
       }
       if (path === "/api/logout") return json({ ok: true }, 200, { "set-cookie": cookie("", 0) });
+      if (path.startsWith("/api/cuenta")) return await cuenta(req, env, path);
       if (path.startsWith("/api/admin/")) {
         if (!(await isAdmin(req, env))) return json({ error: "Sesión vencida" }, 401);
         return await admin(req, env, path);
