@@ -274,6 +274,39 @@ footer button.fl2:hover,footer a:hover{color:#fff}
 .acc .ab a{color:var(--iris);font-weight:700;text-decoration:none}
 .share{display:inline-flex;gap:8px;align-items:center;border:0;background:none;cursor:pointer;font-weight:600;padding:8px 0;color:var(--ink)}
 .share svg{width:18px;height:18px}
+.fabs{position:fixed;right:calc(18px + env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:65;display:grid;gap:14px;justify-items:center}
+.fab{width:58px;height:58px;border-radius:50%;border:0;display:grid;place-items:center;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.22);position:relative;transition:transform .15s;text-decoration:none}
+.fab:hover{transform:scale(1.06)}
+.fab svg{width:30px;height:30px}
+.fab.wa2{background:#25D366;color:#fff;width:62px;height:62px}
+.fab.wa2 svg{width:34px;height:34px}
+.fab.chat{background:var(--brand);color:#fff;width:52px;height:52px}
+.fab.chat svg{width:26px;height:26px}
+.fab .dot{position:absolute;top:-4px;right:-4px;background:#E0245E;color:#fff;font-size:12px;font-weight:800;min-width:22px;height:22px;border-radius:999px;display:grid;place-items:center;padding:0 6px;border:2px solid #fff}
+.fab.wa2::before{content:"";position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 0 rgba(37,211,102,.5);animation:ring 2.4s infinite}
+@keyframes ring{70%{box-shadow:0 0 0 14px rgba(37,211,102,0)}100%{box-shadow:0 0 0 0 rgba(37,211,102,0)}}
+.bubble{position:absolute;right:66px;bottom:8px;background:#fff;color:var(--ink);border-radius:14px 14px 4px 14px;padding:10px 14px;font-size:13.5px;font-weight:600;box-shadow:var(--shadow);white-space:nowrap;animation:pop .25s ease-out}
+.cpanel{position:fixed;right:calc(18px + env(safe-area-inset-right,0px));bottom:calc(164px + env(safe-area-inset-bottom,0px));width:min(360px,calc(100vw - 36px));max-height:min(560px,calc(100vh - 200px));background:#fff;border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.25);z-index:66;display:grid;grid-template-rows:auto 1fr auto;overflow:hidden;animation:pop .2s ease-out}
+.ch{background:var(--brand) var(--hex);background-size:84px 146px;color:#fff;padding:16px 16px 14px;display:flex;gap:12px;align-items:center}
+.ch .av{width:40px;height:40px;border-radius:50%;background:#fff;color:#0A0A0C;display:grid;place-items:center;flex:none;font-family:var(--f-display);font-weight:700;font-size:15px;letter-spacing:.04em}
+.ch b{display:block;font-size:15px}
+.ch span{font-size:12px;color:#B9B9C6;display:flex;gap:6px;align-items:center}
+.ch span i{width:8px;height:8px;border-radius:50%;background:#25D366}
+.ch .x{color:#fff;margin-left:auto}
+.ch .x:hover{background:rgba(255,255,255,.1)}
+.cb{overflow-y:auto;padding:14px;display:grid;gap:10px;align-content:start;background:var(--bg)}
+.msg{max-width:85%;padding:10px 13px;border-radius:14px;font-size:14px;line-height:1.45}
+.msg.bot{background:#fff;border:1px solid var(--line);border-top-left-radius:4px;justify-self:start}
+.msg.me{background:var(--brand);color:#fff;border-top-right-radius:4px;justify-self:end}
+.msg a{color:var(--iris);font-weight:700}
+.qs{display:flex;flex-wrap:wrap;gap:6px}
+.qs button{border:1px solid var(--iris);background:#fff;color:var(--iris);border-radius:999px;padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer}
+.qs button:hover{background:var(--iris-soft)}
+.cf{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line);background:#fff}
+.cf input{flex:1;min-width:0;border:1px solid var(--line);border-radius:999px;padding:10px 14px;outline:none}
+.cf input:focus{border-color:var(--iris)}
+.cf button{border:0;background:var(--brand);color:#fff;border-radius:50%;width:42px;height:42px;cursor:pointer;display:grid;place-items:center;flex:none}
+.cf button svg{width:18px;height:18px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--brand);color:#fff;padding:11px 18px;border-radius:12px;font-weight:700;z-index:90;max-width:calc(100% - 32px);box-shadow:var(--shadow)}
 
 /* responsive */
@@ -405,6 +438,11 @@ footer button.fl2:hover,footer a:hover{color:#fff}
 
 <div id="drawer-root"></div>
 <div id="modal-root"></div>
+<div class="fabs" id="fabs">
+  <button class="fab chat" type="button" id="chatfab" aria-label="Abrir chat de ayuda"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.8 7L4 20l1.1-4.9A8 8 0 1 1 21 12z"/><path d="M8 12h.01M12 12h.01M16 12h.01"/></svg><b class="dot" id="chatdot">2</b></button>
+  <a class="fab wa2" id="wafab" href="https://wa.me/50661611731" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-1.7-.1-.4-.1-.9-.3-1.5-.6-2.7-1.2-4.4-3.9-4.6-4.1-.1-.2-1.1-1.4-1.1-2.7s.7-2 .9-2.2c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2.1.3 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.7 1.2 1.6 2 1.1 1 2 1.3 2.3 1.4.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.8.9c.3.1.5.2.5.3.1.2.1.7-.1 1.2z"/></svg></a>
+</div>
+<div id="chat-root"></div>
 <div id="toast-root"></div>
 
 <script>
@@ -671,10 +709,61 @@ $("#cartbtn").addEventListener("click",openCart);
 $("#acct").addEventListener("click",()=>CUST?openAccount():openAuth());
 $("#f-acct").addEventListener("click",()=>CUST?openAccount():openAuth());
 $$("[data-goall]").forEach(b=>b.addEventListener("click",()=>{clearFilters();goShop()}));
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeCart();closeModal();closeMega()}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeCart();closeModal();closeMega();closeChat()}});
+
+/* ---------- floating bubbles & help chat ---------- */
+const waLink=t=>"https://wa.me/"+STORE.whatsapp+"?text="+encodeURIComponent(t||"Hola, vengo de pegasushyper.com y tengo una consulta.");
+function setWa(){$("#wafab").href=waLink()}
+let chatSeen=!!store("ph-chat-seen"), chatLog=[];
+if(chatSeen)$("#chatdot").hidden=true;
+else setTimeout(()=>{if(!$("#chat-root").innerHTML&&!chatSeen){const b=document.createElement("div");b.className="bubble";b.id="hello";b.textContent="¿Le ayudamos a escoger? 👋";$("#chatfab").appendChild(b);setTimeout(()=>{const h=$("#hello");if(h)h.remove()},7000)}},6000);
+const QUICK=[["envio","¿Cuánto cuesta el envío?"],["pago","¿Cómo puedo pagar?"],["garantia","¿Tienen garantía?"],["tiempo","¿Cuánto tarda en llegar?"],["pedido","¿Cómo va mi pedido?"],["persona","Hablar con una persona"]];
+function answer(k){
+  const env=STORE.envios.map(e=>"<b>"+esc(e.n)+"</b>: "+(e.c?crc(e.c):"gratis")).join("<br>");
+  return {
+    envio:"Enviamos a todo Costa Rica:<br>"+env+'<br><a href="/politicas/#envios">Ver política de envíos</a>',
+    pago:"Puede pagar con <b>"+esc(STORE.pagos.join(", "))+"</b>. Al recibir su pedido le confirmamos el total y los datos para pagar por WhatsApp. Nunca le pediremos claves ni datos de tarjeta.",
+    garantia:'Sí. Todos los productos tienen <b>30 días de garantía</b> por defectos de fábrica desde que los recibe. <a href="/politicas/#garantia">Ver detalles</a>',
+    tiempo:'Por Correos de Costa Rica tarda normalmente de 1 a 5 días hábiles según la zona. Con mensajero en la GAM coordinamos el día con usted.',
+    pedido:CUST?'Puede ver el estado de sus pedidos en <a href="#" data-chat="acct">Mi cuenta</a>. Si necesita algo más, escríbanos por WhatsApp.':'Si compró con una cuenta, véalo en <a href="#" data-chat="acct">Mi cuenta</a>. Si no, escríbanos por WhatsApp con su número de pedido (empieza con PH-).',
+    persona:'¡Con gusto! Toque aquí para escribirnos: <a href="'+esc(waLink("Hola, vengo de pegasushyper.com y quiero hablar con alguien."))+'" target="_blank" rel="noopener">abrir WhatsApp ('+esc(phonePretty)+')</a>.'
+  }[k];
+}
+function botSay(html,withQuick){chatLog.push(["bot",html,withQuick]);drawChat()}
+function meSay(t){chatLog.push(["me",esc(t)]);drawChat()}
+function drawChat(){
+  const body=$("#chat-body");if(!body)return;
+  body.innerHTML=chatLog.map(([w,h,q])=>'<div class="msg '+w+'">'+h+'</div>'+(q?'<div class="qs">'+QUICK.map(([k,l])=>'<button type="button" data-q="'+k+'">'+esc(l)+'</button>').join("")+'</div>':'')).join("");
+  body.scrollTop=body.scrollHeight;
+  body.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{meSay(b.textContent);setTimeout(()=>botSay(answer(b.dataset.q)+"<br><br>¿Algo más?",true),350)});
+  body.querySelectorAll('[data-chat="acct"]').forEach(a=>a.onclick=e=>{e.preventDefault();closeChat();CUST?openAccount():openAuth()});
+  body.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>{closeChat();openProduct(b.dataset.open)});
+}
+function freeText(t){
+  const n=norm(t);
+  const map=[["envio",/envi|correo|mensajer|domicilio|costo de env/],["pago",/pag|sinpe|transfer|tarjeta|efectivo/],["garantia",/garant|defect|malo|dañ|falla/],["tiempo",/tarda|cuanto dura|dias|cuando llega|llega/],["pedido",/pedido|orden|estado|PH-/i],["persona",/persona|humano|asesor|llamar|whats/]];
+  const hit=map.find(([k,re])=>re.test(n));
+  if(hit)return answer(hit[0])+"<br><br>¿Algo más?";
+  const w=n.split(/\s+/).filter(x=>x.length>2);
+  const ps=PRODUCTS.filter(p=>w.some(x=>norm(p.nombre+" "+p.categoria+" "+p.marca).includes(x))).slice(0,3);
+  if(ps.length)return "Encontré esto que le puede servir:"+ps.map(p=>'<br>• <a href="#" data-open="'+esc(p.id)+'">'+esc(p.nombre)+'</a> — '+crc(p.precio)).join("")+'<br><br>¿Quiere que le asesoremos? <a href="'+esc(waLink("Hola, me interesa: "+t))+'" target="_blank" rel="noopener">Escríbanos por WhatsApp</a>.';
+  return 'No estoy seguro de cómo responder eso. Una persona le puede ayudar por <a href="'+esc(waLink("Hola, tengo una consulta: "+t))+'" target="_blank" rel="noopener">WhatsApp</a>.';
+}
+function closeChat(){$("#chat-root").innerHTML="";$("#chatfab").setAttribute("aria-expanded","false")}
+function openChat(){
+  if($("#chat-root").innerHTML){closeChat();return}
+  const h=$("#hello");if(h)h.remove();
+  chatSeen=true;store("ph-chat-seen",1);$("#chatdot").hidden=true;$("#chatfab").setAttribute("aria-expanded","true");
+  $("#chat-root").innerHTML='<div class="cpanel" role="dialog" aria-label="Chat de ayuda"><div class="ch"><span class="av" aria-hidden="true">PH</span><div><b>'+esc(STORE.nombre)+'</b><span><i></i>Respondemos por WhatsApp</span></div><button class="x" type="button" id="chatx" aria-label="Cerrar chat">✕</button></div><div class="cb" id="chat-body"></div><form class="cf" id="chatf"><input id="chatin" placeholder="Escriba su pregunta…" autocomplete="off" aria-label="Escriba su pregunta"><button type="submit" aria-label="Enviar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></form></div>';
+  if(!chatLog.length){chatLog.push(["bot","¡Hola"+(CUST?" "+esc((CUST.nombre||"").split(" ")[0]):"")+"! 👋 Bienvenido a <b>"+esc(STORE.nombre)+"</b>."]);chatLog.push(["bot","¿En qué le podemos ayudar? Toque una opción o escriba su pregunta.",true])}
+  drawChat();
+  $("#chatx").onclick=closeChat;
+  $("#chatf").onsubmit=e=>{e.preventDefault();const v=$("#chatin").value.trim();if(!v)return;$("#chatin").value="";meSay(v);setTimeout(()=>botSay(freeText(v)),350)};
+}
+$("#chatfab").addEventListener("click",openChat);
 
 /* ---------- load ---------- */
-function applyStore(){phonePretty=String(STORE.whatsapp).replace(/^506/,"").replace(/(\d{4})(\d{4})/,"$1-$2");$$(".phone").forEach(e=>e.textContent=phonePretty);if(!STORE.envios.some(e=>e.n===form.envio))form.envio=STORE.envios[0]?STORE.envios[0].n:"";if(!STORE.pagos.includes(form.pago))form.pago=STORE.pagos[0]||""}
+function applyStore(){setWa();phonePretty=String(STORE.whatsapp).replace(/^506/,"").replace(/(\d{4})(\d{4})/,"$1-$2");$$(".phone").forEach(e=>e.textContent=phonePretty);if(!STORE.envios.some(e=>e.n===form.envio))form.envio=STORE.envios[0]?STORE.envios[0].n:"";if(!STORE.pagos.includes(form.pago))form.pago=STORE.pagos[0]||""}
 renderShop();refreshCounts();
 fetch("/api/catalog").then(r=>{if(!r.ok)throw 0;return r.json()}).then(d=>{
   STORE={...STORE,...d.store};
