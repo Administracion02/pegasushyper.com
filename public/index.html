@@ -108,10 +108,11 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   <p>Tecnología y accesorios con envío a todo Costa Rica. Arme su pedido y nos llega directo por WhatsApp.</p>
 </div></header>
 <nav class="bar" aria-label="Categorías"><div class="wrap" id="cats"></div></nav>
-<main class="wrap" id="main"><h2>Productos</h2><ul><li>Barra de sonido Lenovo L101 negra — ₡31.000</li><li>Barra de sonido Scorpion SG-272 Marvo — ₡20.000</li><li>Barra de sonido Scorpion SG-280 Marvo — ₡34.000</li><li>Barra de sonido Scorpion SG-286 Marvo — ₡21.500</li><li>Parlante Scorpion SG-100 Marvo — ₡39.500</li><li>Parlante Scorpion SG-132 Marvo — ₡51.500</li><li>Parlante cubo Scorpion BS010 Marvo — ₡22.000</li><li>Parlante lámpara G Scorpion SG-302 Marvo — ₡19.000</li><li>Parlantes Monka SG-500 — ₡28.500</li><li>Parlantes Scorpion SG-118 Marvo (par) — ₡8.000</li><li>Parlantes Scorpion SG-235 Marvo (set de 3) — ₡26.000</li><li>Parlantes Scorpion SG-265 Marvo (par) — ₡21.500</li><li>Parlantes Scorpion SG-269 Marvo (par) — ₡28.500</li><li>Parlantes Scorpion SG-274 Marvo (par) — ₡22.000</li></ul></main>
+<main class="wrap" id="main"></main>
 <footer class="foot"><div class="wrap">
   <span>¿Dudas? Escríbanos por WhatsApp al <span class="sel" id="phone"></span></span>
-  <span>Precios en colones · Envíos con Correos de Costa Rica, mensajero o retiro</span>
+  <span>Precios en colones · Envíos a todo Costa Rica</span>
+  <a href="/admin/" style="color:var(--muted);font-size:12px;margin-top:10px">Administrar</a>
 </div></footer>
 <button class="cartbtn" id="cartbtn" hidden></button>
 <div id="drawer-root"></div>
@@ -119,17 +120,18 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 <script>
 (function(){
 "use strict";
-const STORE={"nombre": "Pegasus Hyper", "whatsapp": "50661611731", "prefijo": "PH", "envios": [{"n": "Correos de Costa Rica", "c": 2500}, {"n": "Mensajero (GAM)", "c": 2000}, {"n": "Retiro en persona", "c": 0}], "pagos": ["SINPE Móvil", "Transferencia", "Efectivo contra entrega"]};
-const PRODUCTS=[{"id": "6970939958212", "nombre": "Barra de sonido Lenovo L101 negra", "categoria": "Parlantes", "precio": 31000, "descripcion": "Barra de sonido compacta marca Lenovo.", "foto": "img/6970939958212.jpg", "agotado": false}, {"id": "6932391925782", "nombre": "Barra de sonido Scorpion SG-272 Marvo", "categoria": "Parlantes", "precio": 20000, "descripcion": "Barra de sonido para escritorio con luces RGB.", "foto": "img/6932391925782.jpg", "agotado": false}, {"id": "6932391923955", "nombre": "Barra de sonido Scorpion SG-280 Marvo", "categoria": "Parlantes", "precio": 34000, "descripcion": "Barra de sonido con acabado texturizado y luces.", "foto": "img/6932391923955.jpg", "agotado": false}, {"id": "6932391929025", "nombre": "Barra de sonido Scorpion SG-286 Marvo", "categoria": "Parlantes", "precio": 21500, "descripcion": "Barra compacta para escritorio con iluminación RGB.", "foto": "img/6932391929025.jpg", "agotado": false}, {"id": "6932391926574", "nombre": "Parlante Scorpion SG-100 Marvo", "categoria": "Parlantes", "precio": 39500, "descripcion": "Diseño futurista con iluminación de colores.", "foto": "img/6932391926574.jpg", "agotado": false}, {"id": "6932391927571", "nombre": "Parlante Scorpion SG-132 Marvo", "categoria": "Parlantes", "precio": 51500, "descripcion": "Parlante con luces multicolor y sonido potente.", "foto": "img/6932391927571.jpg", "agotado": false}, {"id": "6932391933336", "nombre": "Parlante cubo Scorpion BS010 Marvo", "categoria": "Parlantes", "precio": 22000, "descripcion": "Diseño de cubo con estilo gamer y luz verde.", "foto": "img/6932391933336.jpg", "agotado": false}, {"id": "6932391931042", "nombre": "Parlante lámpara G Scorpion SG-302 Marvo", "categoria": "Parlantes", "precio": 19000, "descripcion": "Diseño de lámpara en forma de G con luces RGB de colores.", "foto": "img/6932391931042.jpg", "agotado": false}, {"id": "6932391932179", "nombre": "Parlantes Monka SG-500", "categoria": "Parlantes", "precio": 28500, "descripcion": "Par de parlantes blancos con luces de colores.", "foto": "img/6932391932179.jpg", "agotado": false}, {"id": "6932391920138", "nombre": "Parlantes Scorpion SG-118 Marvo (par)", "categoria": "Parlantes", "precio": 8000, "descripcion": "Par de parlantes compactos con luces RGB.", "foto": "img/6932391920138.jpg", "agotado": false}, {"id": "6932391924181", "nombre": "Parlantes Scorpion SG-235 Marvo (set de 3)", "categoria": "Parlantes", "precio": 26000, "descripcion": "Set con unidad central y dos parlantes laterales, con luces RGB.", "foto": "img/6932391924181.jpg", "agotado": false}, {"id": "6932391919712", "nombre": "Parlantes Scorpion SG-265 Marvo (par)", "categoria": "Parlantes", "precio": 21500, "descripcion": "Par de parlantes con aros de luz de colores.", "foto": "img/6932391919712.jpg", "agotado": false}, {"id": "6932391923832", "nombre": "Parlantes Scorpion SG-269 Marvo (par)", "categoria": "Parlantes", "precio": 28500, "descripcion": "Par de parlantes de escritorio con luces RGB.", "foto": "img/6932391923832.jpg", "agotado": false}, {"id": "6932391925164", "nombre": "Parlantes Scorpion SG-274 Marvo (par)", "categoria": "Parlantes", "precio": 22000, "descripcion": "Par de parlantes de escritorio con luces RGB.", "foto": "img/6932391925164.jpg", "agotado": false}];
+let STORE={nombre:"Pegasus Hyper",whatsapp:"50661611731",prefijo:"PH",envios:[],pagos:[]};
+let PRODUCTS=[];
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const crc=v=>"₡"+Math.round(v).toLocaleString("es-CR");
 const ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8.66 5v10L12 22l-8.66-5V7z"/><path d="M12 22V12M20.66 7L12 12 3.34 7"/></svg>';
-let cart={}, cat="Todos", form={nombre:"",telefono:"",direccion:"",envio:STORE.envios[0]?STORE.envios[0].n:"",pago:STORE.pagos[0]||"",notas:""};
-try{const c=JSON.parse(localStorage.getItem("ph-cart")||"{}");Object.keys(c).forEach(k=>{if(PRODUCTS.some(p=>p.id===k))cart[k]=c[k]});const f=JSON.parse(localStorage.getItem("ph-form")||"null");if(f)form={...form,...f}}catch(e){}
+let cart={}, cat="Todos", loaded=false, failed=false, form={nombre:"",telefono:"",direccion:"",envio:"",pago:"",notas:""};
+let savedCart={};try{savedCart=JSON.parse(localStorage.getItem("ph-cart")||"{}");const f=JSON.parse(localStorage.getItem("ph-form")||"null");if(f)form={...form,...f}}catch(e){}
 const persist=()=>{try{localStorage.setItem("ph-cart",JSON.stringify(cart));localStorage.setItem("ph-form",JSON.stringify(form))}catch(e){}};
-const phonePretty=STORE.whatsapp.replace(/^506/,"").replace(/(\d{4})(\d{4})/,"$1-$2");
-$("#phone").textContent=phonePretty;
+let phonePretty="6161-1731";
+function applyStore(){phonePretty=String(STORE.whatsapp).replace(/^506/,"").replace(/(\d{4})(\d{4})/,"$1-$2");$("#phone").textContent=phonePretty;if(!STORE.envios.some(e=>e.n===form.envio))form.envio=STORE.envios[0]?STORE.envios[0].n:"";if(!STORE.pagos.includes(form.pago))form.pago=STORE.pagos[0]||""}
+applyStore();
 
 function renderCats(){
   const cats=["Todos",...new Set(PRODUCTS.map(p=>p.categoria).filter(Boolean))];
@@ -139,6 +141,7 @@ function renderCats(){
 }
 function qtyCtl(id){return '<span class="qty"><button aria-label="Quitar uno" data-m="'+id+'">−</button><span>'+cart[id]+'</span><button aria-label="Agregar uno" data-p="'+id+'">+</button></span>'}
 function render(){
+  if(!loaded){$("#main").innerHTML=failed?'<div class="empty">No pudimos cargar el catálogo. Revise su conexión y recargue la página, o escríbanos por WhatsApp al <span class="sel">'+phonePretty+'</span>.</div>':'<div class="empty">Cargando productos…</div>';$("#cartbtn").hidden=true;return}
   renderCats();
   const ps=PRODUCTS.filter(p=>cat==="Todos"||p.categoria===cat);
   $("#main").innerHTML='<h2>'+(cat==="Todos"?"Todos los productos":esc(cat))+' · '+ps.length+'</h2>'+(ps.length?'<div class="grid">'+ps.map(p=>
@@ -187,7 +190,15 @@ function openCart(){
   bindQty($("#drawer-root"));
   const bindF=(id,key,re)=>{const el=document.getElementById(id);if(!el)return;el.addEventListener(re?"change":"input",()=>{form[key]=el.value;persist();if(re)openCart();else updSend()})};
   bindF("c-nombre","nombre");bindF("c-tel","telefono");bindF("c-dir","direccion");bindF("c-notas","notas");bindF("c-env","envio",1);bindF("c-pago","pago",1);
-  const s=$("#send");if(s)s.addEventListener("click",()=>{setTimeout(()=>{code=null},800)});
+  const s=$("#send");if(s)s.addEventListener("click",async ev=>{
+    ev.preventDefault();if(s.getAttribute("aria-disabled")==="true"||s.dataset.busy)return;
+    s.dataset.busy="1";s.lastChild.textContent="Enviando pedido…";
+    const href="https://wa.me/"+STORE.whatsapp+"?text="+encodeURIComponent(message());
+    try{await fetch("/api/orders",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({codigo:orderCode(),items:Object.entries(cart).map(([id,cantidad])=>({id,cantidad})),cliente:form.nombre,telefono:form.telefono,direccion:form.direccion,envio:form.envio,pago:form.pago,notas:form.notas})})}catch(e){}
+    cart={};code=null;persist();closeCart();render();
+    $("#main").insertAdjacentHTML("afterbegin",'<div class="empty" style="border:1px solid var(--line);border-radius:14px">¡Gracias! Recibimos su pedido. Si WhatsApp no se abrió, escríbanos al <span class="sel">'+phonePretty+'</span>.</div>');
+    location.href=href;
+  });
 }
 function updSend(){
   const s=$("#send");if(!s)return;const miss=missing();
@@ -198,6 +209,7 @@ function closeCart(){$("#drawer-root").innerHTML=""}
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeCart()});
 $("#cartbtn").addEventListener("click",openCart);
 render();
+fetch("/api/catalog").then(r=>{if(!r.ok)throw 0;return r.json()}).then(d=>{STORE={...STORE,...d.store};PRODUCTS=d.productos||[];Object.keys(savedCart).forEach(k=>{const p=PRODUCTS.find(x=>x.id===k);if(p&&!p.agotado)cart[k]=savedCart[k]});applyStore();loaded=true;render()}).catch(()=>{failed=true;render()});
 })();
 </script>
 </body>

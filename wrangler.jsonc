@@ -1,0 +1,20 @@
+{
+  // Configuración de Cloudflare para pegasushyper.com
+  "name": "pegasushyper-com",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "pegasus-db",
+      "database_id": "66939035-0608-4587-916c-fae2b847c8a3"
+    }
+  ],
+  "observability": { "enabled": true },
+  "keep_vars": true
+}
