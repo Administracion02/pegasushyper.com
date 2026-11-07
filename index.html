@@ -5,19 +5,18 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="Pegasus Hyper: tecnología y accesorios con envío a todo Costa Rica. Haga su pedido por WhatsApp.">
 <title>Pegasus Hyper | Tecnología y accesorios en Costa Rica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&family=Figtree:wght@400;500;600;700&display=swap">
 <link rel="canonical" href="https://pegasushyper.com/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Pegasus Hyper">
 <meta property="og:title" content="Pegasus Hyper — Tecnología y accesorios en Costa Rica">
-<meta property="og:description" content="Audífonos, cargadores, relojes inteligentes y más. Envíos a todo Costa Rica. Pida por WhatsApp.">
+<meta property="og:description" content="Parlantes, audífonos, cargadores y más. Envíos a todo Costa Rica. Pida por WhatsApp.">
 <meta property="og:url" content="https://pegasushyper.com/">
 <meta property="og:image" content="https://pegasushyper.com/og.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#000000">
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&family=Figtree:wght@400;500;600;700&display=swap">
 <style>
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}
 
@@ -109,7 +108,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   <p>Tecnología y accesorios con envío a todo Costa Rica. Arme su pedido y nos llega directo por WhatsApp.</p>
 </div></header>
 <nav class="bar" aria-label="Categorías"><div class="wrap" id="cats"></div></nav>
-<main class="wrap" id="main"></main>
+<main class="wrap" id="main"><h2>Productos</h2><ul><li>Barra de sonido Scorpion SG-286 Marvo — ₡21.500</li><li>Parlante Scorpion SG-132 Marvo — ₡51.500</li><li>Parlante cubo Scorpion BS010 Marvo — ₡22.000</li><li>Parlante lámpara G Scorpion SG-302 Marvo — ₡19.000</li><li>Parlantes Monka SG-500 — ₡28.500</li><li>Parlantes Scorpion SG-274 Marvo (par) — ₡22.000</li></ul></main>
 <footer class="foot"><div class="wrap">
   <span>¿Dudas? Escríbanos por WhatsApp al <span class="sel" id="phone"></span></span>
   <span>Precios en colones · Envíos con Correos de Costa Rica, mensajero o retiro</span>
@@ -121,7 +120,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 (function(){
 "use strict";
 const STORE={"nombre": "Pegasus Hyper", "whatsapp": "50661611731", "prefijo": "PH", "envios": [{"n": "Correos de Costa Rica", "c": 2500}, {"n": "Mensajero (GAM)", "c": 2000}, {"n": "Retiro en persona", "c": 0}], "pagos": ["SINPE Móvil", "Transferencia", "Efectivo contra entrega"]};
-const PRODUCTS=[{"id": "ej-p1", "nombre": "Audífonos Bluetooth TWS (ejemplo)", "categoria": "Audio", "precio": 12500, "descripcion": "", "foto": "", "agotado": false}, {"id": "ej-p2", "nombre": "Cargador rápido 20W USB-C (ejemplo)", "categoria": "Cargadores", "precio": 7500, "descripcion": "", "foto": "", "agotado": false}, {"id": "ej-p3", "nombre": "Reloj inteligente (ejemplo)", "categoria": "Wearables", "precio": 22000.0, "descripcion": "", "foto": "", "agotado": false}];
+const PRODUCTS=[{"id": "6932391929025", "nombre": "Barra de sonido Scorpion SG-286 Marvo", "categoria": "Parlantes", "precio": 21500, "descripcion": "Barra compacta para escritorio con iluminación RGB.", "foto": "img/6932391929025.jpg", "agotado": false}, {"id": "6932391927571", "nombre": "Parlante Scorpion SG-132 Marvo", "categoria": "Parlantes", "precio": 51500, "descripcion": "Parlante con luces multicolor y sonido potente.", "foto": "img/6932391927571.jpg", "agotado": false}, {"id": "6932391933336", "nombre": "Parlante cubo Scorpion BS010 Marvo", "categoria": "Parlantes", "precio": 22000, "descripcion": "Diseño de cubo con estilo gamer y luz verde.", "foto": "img/6932391933336.jpg", "agotado": false}, {"id": "6932391931042", "nombre": "Parlante lámpara G Scorpion SG-302 Marvo", "categoria": "Parlantes", "precio": 19000, "descripcion": "Diseño de lámpara en forma de G con luces RGB de colores.", "foto": "img/6932391931042.jpg", "agotado": false}, {"id": "6932391932179", "nombre": "Parlantes Monka SG-500", "categoria": "Parlantes", "precio": 28500, "descripcion": "Par de parlantes blancos con luces de colores.", "foto": "img/6932391932179.jpg", "agotado": false}, {"id": "6932391925164", "nombre": "Parlantes Scorpion SG-274 Marvo (par)", "categoria": "Parlantes", "precio": 22000, "descripcion": "Par de parlantes de escritorio con luces RGB.", "foto": "img/6932391925164.jpg", "agotado": false}];
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const crc=v=>"₡"+Math.round(v).toLocaleString("es-CR");
