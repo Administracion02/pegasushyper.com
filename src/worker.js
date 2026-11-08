@@ -247,7 +247,7 @@ async function admin(req, env, path) {
     if (data.cfg) { await putDoc(db, "tienda", "config", { ...DEFAULT_CFG, ...data.cfg }); n++; }
     const now = Date.now();
     for (const c of COLS.filter((x) => x !== "clientes")) {
-      const list = (Array.isArray(data[c]) ? data[c] : []).slice(0, 200);
+      const list = Array.isArray(data[c]) ? data[c] : [];
       for (let i = 0; i < list.length; i += 40) {
         const chunk = list.slice(i, i + 40).map((d) => { const { id, _u, ...rest } = d; return [String(id || newId()), rest]; });
         // merge mode only adds or updates the fields sent, keeping prices, photos and stock already saved
