@@ -215,7 +215,14 @@ section{margin-top:34px}
 .qty button{border:0;background:var(--soft);width:40px;height:40px;cursor:pointer;font-size:18px;font-weight:700}
 .qty span{flex:1;text-align:center;font-weight:800}
 .empty{text-align:center;color:var(--muted);padding:40px 16px;background:#fff;border:1px dashed var(--line);border-radius:var(--r)}
-.more{display:flex;justify-content:center;margin-top:18px}
+.pager{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:22px;flex-wrap:wrap}
+.pager button{min-width:42px;height:42px;border:0;background:none;border-radius:8px;font-weight:800;font-size:15px;cursor:pointer;color:var(--ink);font-variant-numeric:tabular-nums;display:grid;place-items:center;padding:0 8px}
+.pager button:hover:not([disabled]):not([aria-current]){background:#fff;box-shadow:inset 0 0 0 1px var(--line)}
+.pager button[aria-current="page"]{background:var(--brand);color:#fff}
+.pager button[disabled]{opacity:.3;cursor:default}
+.pager button svg{width:18px;height:18px}
+.pager .gap{min-width:30px;text-align:center;font-weight:800;color:var(--muted)}
+.pinfo{text-align:center;color:var(--muted);font-size:13px;margin-top:8px}
 .btn2{border:1px solid var(--ink);background:#fff;border-radius:999px;padding:11px 24px;font-weight:800;cursor:pointer}
 
 /* info blocks */
@@ -438,7 +445,7 @@ footer button.fl2:hover,footer a:hover{color:#fff}
           <select id="sort" aria-label="Ordenar"><option value="rel">Más relevantes</option><option value="pa">Precio: menor a mayor</option><option value="pd">Precio: mayor a menor</option><option value="az">Nombre A–Z</option></select></div>
         <div class="pbar" id="pbar" aria-label="Filtrar por precio"></div>
         <div class="grid" id="grid"></div>
-        <div class="more" id="more" hidden><button class="btn2" type="button">Ver más productos</button></div>
+        <nav class="pager" id="pager" aria-label="Páginas de productos"></nav>
       </div>
     </div>
   </section>
@@ -484,7 +491,8 @@ let STORE={nombre:"Pegasus Hyper",whatsapp:"50661611731",prefijo:"PH",envios:[],
 let PRODUCTS=[], loaded=false, failed=false, CUST=null;
 let cart=store("ph-cart")||{}, favs=new Set(store("ph-favs")||[]);
 let form={nombre:"",telefono:"",direccion:"",envio:"",pago:"",notas:"",...(store("ph-form")||{})};
-const F={cats:new Set(),brands:new Set(),min:"",max:"",fav:false,q:"",sort:"rel",shown:24};
+const F={cats:new Set(),brands:new Set(),min:"",max:"",fav:false,q:"",sort:"rel",shown:24,page:1};
+const PER=12;let lastSig="";
 const persist=()=>{store("ph-cart",cart);store("ph-form",form);store("ph-favs",[...favs])};
 let phonePretty="6161-1731";
 
@@ -522,6 +530,8 @@ function card(p){
 }
 
 /* ---------- filtering ---------- */
+function pageList(c,n){const r=[];const R=(a,b)=>{for(let i=a;i<=b;i++)r.push(i)};
+  if(n<=7)R(1,n);else if(c<=4){R(1,5);r.push("…",n)}else if(c>=n-3){r.push(1,"…");R(n-4,n)}else{r.push(1,"…");R(c-1,c+1);r.push("…",n)}return r}
 function norm(s){return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")}
 function filtered(){
   const q=norm(F.q).split(/\s+/).filter(Boolean);
@@ -532,10 +542,15 @@ function filtered(){
 function renderShop(){
   if(!loaded){$("#grid").innerHTML='<div class="empty" style="grid-column:1/-1">'+(failed?'No pudimos cargar el catálogo. Recargue la página o escríbanos por WhatsApp al '+esc(phonePretty)+'.':'Cargando productos…')+'</div>';return}
   const ps=filtered();
+  const sig=JSON.stringify([[...F.cats],[...F.brands],F.min,F.max,F.fav,F.q,F.sort]);if(sig!==lastSig){F.page=1;lastSig=sig}
+  const pages=Math.max(1,Math.ceil(ps.length/PER));if(F.page>pages)F.page=pages;
   $("#count").textContent=ps.length+" producto"+(ps.length===1?"":"s")+(F.q?' para “'+F.q+'”':'');
-  $("#grid").innerHTML=ps.length?ps.slice(0,F.shown).map(card).join(""):'<div class="empty" style="grid-column:1/-1">No encontramos productos con esos filtros. <button class="lnk" type="button" id="clear2">Limpiar filtros</button></div>';
+  $("#grid").innerHTML=ps.length?ps.slice((F.page-1)*PER,F.page*PER).map(card).join(""):'<div class="empty" style="grid-column:1/-1">No encontramos productos con esos filtros. <button class="lnk" type="button" id="clear2">Limpiar filtros</button></div>';
   const c2=$("#clear2");if(c2)c2.addEventListener("click",clearFilters);
-  $("#more").hidden=ps.length<=F.shown;
+  const arrow=d=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+(d<0?'m15 6-6 6 6 6':'m9 6 6 6-6 6')+'"/></svg>';
+  const nums=pageList(F.page,pages);
+  $("#pager").innerHTML=pages>1?'<button type="button" data-pg="'+(F.page-1)+'" aria-label="Página anterior"'+(F.page===1?' disabled':'')+'>'+arrow(-1)+'</button>'+nums.map(n=>n==="…"?'<span class="gap">…</span>':'<button type="button" data-pg="'+n+'"'+(n===F.page?' aria-current="page"':'')+' aria-label="Página '+n+'">'+n+'</button>').join("")+'<button type="button" data-pg="'+(F.page+1)+'" aria-label="Página siguiente"'+(F.page===pages?' disabled':'')+'>'+arrow(1)+'</button>'+'<div class="pinfo" style="flex-basis:100%">Mostrando '+((F.page-1)*PER+1)+'–'+Math.min(F.page*PER,ps.length)+' de '+ps.length+'</div>':'';
+  $$("[data-pg]").forEach(b=>b.addEventListener("click",()=>{const n=+b.dataset.pg;if(n<1||n>pages||n===F.page)return;F.page=n;renderShop();goShop()}));
   const chips=[...F.cats].map(c=>['cat',c,c]).concat([...F.brands].map(b=>['brand',b,b]));
   if(F.min||F.max)chips.push(['price','', (F.min?crc(+F.min):"₡0")+" – "+(F.max?crc(+F.max):"más")]);
   if(F.q)chips.push(['q','','“'+F.q+'”']);if(F.fav)chips.push(['fav','','Favoritos']);
@@ -755,7 +770,6 @@ function bind(root){
   root.querySelectorAll("[data-fav]").forEach(b=>b.onclick=()=>{const id=b.dataset.fav;favs.has(id)?favs.delete(id):favs.add(id);persist();refreshCounts();$$('[data-fav="'+CSS.escape(id)+'"]').forEach(x=>x.setAttribute("aria-pressed",favs.has(id)));if(F.fav)renderShop()});
 }
 new MutationObserver(()=>bind(document)).observe(document.body,{childList:true,subtree:true});
-$("#more button").addEventListener("click",()=>{F.shown+=24;renderShop()});
 $("#sort").addEventListener("change",e=>{F.sort=e.target.value;renderShop()});
 let pt;["pmin","pmax"].forEach(id=>$("#"+id).addEventListener("input",e=>{clearTimeout(pt);pt=setTimeout(()=>{F[id==="pmin"?"min":"max"]=e.target.value.replace(/\D/g,"");F.shown=24;syncPrice();renderShop()},300)}));
 $("#f-fav").addEventListener("change",e=>{F.fav=e.target.checked;renderShop()});
