@@ -137,6 +137,12 @@ async function cuenta(req, env, path) {
   }
   if (path === "/api/cuenta/login" && req.method === "POST") {
     const usuario = normUser(b.usuario);
+    // the store owner signs in from the same window with the admin user and the ADMIN_PASSWORD secret
+    const adminUser = normUser(env.ADMIN_USER || "admin");
+    if (usuario === adminUser) {
+      if (!safeEqual(String(b.password || ""), env.ADMIN_PASSWORD)) { await new Promise((r) => setTimeout(r, 1200)); return json({ error: "Correo o contraseña incorrectos." }, 401); }
+      return json({ ok: true, admin: true }, 200, { "set-cookie": cookie(await makeSession(env), SESSION_DAYS * 86400) });
+    }
     const id = await clienteId(usuario);
     const c = await getDoc(db, "clientes", id);
     const ok = c && safeEqual((await hashPassword(String(b.password || ""), c.salt)).hash, c.hash);
@@ -291,6 +297,7 @@ export default {
       if (path.startsWith("/api/cuenta")) return await cuenta(req, env, path);
       if (path.startsWith("/api/admin/")) {
         if (!(await isAdmin(req, env))) return json({ error: "Sesión vencida" }, 401);
+        if (path === "/api/admin/ping") return json({ ok: true });
         return await admin(req, env, path);
       }
       return json({ error: "Ruta no encontrada" }, 404);
