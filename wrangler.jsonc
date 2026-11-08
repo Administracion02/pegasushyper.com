@@ -6,7 +6,8 @@
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
-    "not_found_handling": "404-page"
+    "not_found_handling": "404-page",
+    "run_worker_first": true
   },
   "d1_databases": [
     {
@@ -14,6 +15,10 @@
       "database_name": "pegasus-db",
       "database_id": "66939035-0608-4587-916c-fae2b847c8a3"
     }
+  ],
+  "routes": [
+    { "pattern": "pegasushyper.com", "custom_domain": true },
+    { "pattern": "www.pegasushyper.com", "custom_domain": true }
   ],
   "observability": { "enabled": true },
   "keep_vars": true

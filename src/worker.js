@@ -304,6 +304,8 @@ export default {
   async fetch(req, env) {
     const url = new URL(req.url);
     const path = url.pathname;
+    // www.pegasushyper.com → pegasushyper.com (one address, one login)
+    if (url.hostname.startsWith("www.")) { url.hostname = url.hostname.slice(4); return Response.redirect(url.toString(), 301); }
     if (!path.startsWith("/api/")) return env.ASSETS.fetch(req);
     try {
       await ensureSchema(env.DB);
