@@ -265,6 +265,20 @@ async function admin(req, env, path) {
         if (stmts.length) { await db.batch(stmts); n += stmts.length; }
       }
     }
+    // remove products that left the catalog, and hide ones kept only for the record
+    const borrar = (Array.isArray(data.borrar) ? data.borrar : []).map(String).slice(0, 400);
+    for (let i = 0; i < borrar.length; i += 40) {
+      const ids = borrar.slice(i, i + 40);
+      await db.batch(ids.flatMap((id) => [db.prepare("DELETE FROM docs WHERE col='productos' AND id=?").bind(id), db.prepare("DELETE FROM docs WHERE col='fotos' AND id=?").bind(id)]));
+      n += ids.length;
+    }
+    const ocultar = (Array.isArray(data.ocultar) ? data.ocultar : []).map(String).slice(0, 400);
+    for (let i = 0; i < ocultar.length; i += 40) {
+      const ids = ocultar.slice(i, i + 40);
+      const rs = await db.prepare(`SELECT id,data FROM docs WHERE col='productos' AND id IN (${ids.map(() => "?").join(",")})`).bind(...ids).all();
+      const st = (rs.results || []).map((r) => db.prepare("UPDATE docs SET data=?, updated=? WHERE col='productos' AND id=?").bind(JSON.stringify({ ...JSON.parse(r.data), visible: false }), now, r.id));
+      if (st.length) { await db.batch(st); n += st.length; }
+    }
     return json({ ok: true, importados: n });
   }
   const rs = path.match(/^\/api\/admin\/clientes\/([\w]+)\/reset$/);
