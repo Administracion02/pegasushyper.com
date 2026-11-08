@@ -180,7 +180,7 @@ async function catalog(env) {
   const c = await getCfg(env.DB);
   const prods = (await listCol(env.DB, "productos"))
     .filter((p) => p.nombre && p.visible !== false)
-    .map((p) => ({ id: p.id, nombre: p.nombre, modelo: p.modelo || "", ...(Array.isArray(p.conexiones) ? { conexiones: p.conexiones.slice(0, 8).map(String) } : {}), categoria: p.categoria || "", descripcion: p.descripcion || "", foto: fotoUrl(p), precio: precioDe(p, c), agotado: !!p.agotado }))
+    .map((p) => ({ id: p.id, nombre: p.nombre, modelo: p.modelo || "", marca: p.marca || "", ...(Array.isArray(p.conexiones) ? { conexiones: p.conexiones.slice(0, 8).map(String) } : {}), categoria: p.categoria || "", descripcion: p.descripcion || "", foto: fotoUrl(p), precio: precioDe(p, c), agotado: !!p.agotado }))
     .sort((a, b) => (a.categoria + a.nombre).localeCompare(b.categoria + b.nombre, "es"));
   const store = { nombre: c.nombre, whatsapp: c.whatsapp, prefijo: c.prefijo || "PH", envios: c.envios, pagos: c.pagos };
   return json({ store, productos: prods }, 200, { "cache-control": "public, max-age=30" });
@@ -245,13 +245,25 @@ async function admin(req, env, path) {
     const data = await req.json();
     let n = 0;
     if (data.cfg) { await putDoc(db, "tienda", "config", { ...DEFAULT_CFG, ...data.cfg }); n++; }
-    for (const c of COLS.filter((x) => x !== "clientes")) for (const d of Array.isArray(data[c]) ? data[c] : []) {
-      const { id, _u, ...rest } = d;
-      const key = String(id || newId());
-      // merge mode only adds or updates the fields sent, keeping prices, photos and stock already saved
-      const prev = data.merge ? await getDoc(db, c, key) : null;
-      if (data.merge && !prev) continue;
-      await putDoc(db, c, key, prev ? { ...prev, ...rest } : rest); n++;
+    const now = Date.now();
+    for (const c of COLS.filter((x) => x !== "clientes")) {
+      const list = (Array.isArray(data[c]) ? data[c] : []).slice(0, 200);
+      for (let i = 0; i < list.length; i += 40) {
+        const chunk = list.slice(i, i + 40).map((d) => { const { id, _u, ...rest } = d; return [String(id || newId()), rest]; });
+        // merge mode only adds or updates the fields sent, keeping prices, photos and stock already saved
+        let prevMap = {};
+        if (data.merge && chunk.length) {
+          const rs = await db.prepare(`SELECT id,data FROM docs WHERE col=? AND id IN (${chunk.map(() => "?").join(",")})`).bind(c, ...chunk.map((x) => x[0])).all();
+          for (const r of rs.results || []) prevMap[r.id] = JSON.parse(r.data);
+        }
+        const stmts = [];
+        for (const [key, rest] of chunk) {
+          const prev = prevMap[key];
+          if (data.merge && !prev) continue;
+          stmts.push(db.prepare("INSERT INTO docs (col,id,data,updated) VALUES (?,?,?,?) ON CONFLICT(col,id) DO UPDATE SET data=excluded.data, updated=excluded.updated").bind(c, key, JSON.stringify(prev ? { ...prev, ...rest } : rest), now));
+        }
+        if (stmts.length) { await db.batch(stmts); n += stmts.length; }
+      }
     }
     return json({ ok: true, importados: n });
   }
