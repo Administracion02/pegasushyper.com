@@ -180,7 +180,7 @@ async function catalog(env) {
   const c = await getCfg(env.DB);
   const prods = (await listCol(env.DB, "productos"))
     .filter((p) => p.nombre && p.visible !== false)
-    .map((p) => ({ id: p.id, nombre: p.nombre, modelo: p.modelo || "", categoria: p.categoria || "", descripcion: p.descripcion || "", foto: fotoUrl(p), precio: precioDe(p, c), agotado: !!p.agotado }))
+    .map((p) => ({ id: p.id, nombre: p.nombre, modelo: p.modelo || "", ...(Array.isArray(p.conexiones) ? { conexiones: p.conexiones.slice(0, 8).map(String) } : {}), categoria: p.categoria || "", descripcion: p.descripcion || "", foto: fotoUrl(p), precio: precioDe(p, c), agotado: !!p.agotado }))
     .sort((a, b) => (a.categoria + a.nombre).localeCompare(b.categoria + b.nombre, "es"));
   const store = { nombre: c.nombre, whatsapp: c.whatsapp, prefijo: c.prefijo || "PH", envios: c.envios, pagos: c.pagos };
   return json({ store, productos: prods }, 200, { "cache-control": "public, max-age=30" });
