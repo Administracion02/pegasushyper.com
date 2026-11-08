@@ -213,6 +213,8 @@ section{margin-top:34px}
 .cspec{display:grid;grid-template-columns:auto 1fr;gap:2px 8px;margin:0;font-size:12.5px;line-height:1.35}
 .cspec dt{color:var(--muted);font-weight:600}.cspec dd{margin:0;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .card .info{display:flex;flex-direction:column}.card .info>.price{margin-top:auto}
+.cmodel{font-size:13px;font-weight:700;letter-spacing:.02em;margin-top:-4px}
+.cname{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-weight:500!important}
 .cdesc{margin:0;font-size:12.5px;line-height:1.45;color:var(--muted);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .brandl{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .name{font-weight:600;font-size:14.5px;line-height:1.3;cursor:pointer;border:0;background:none;padding:0;text-align:left}
@@ -538,7 +540,7 @@ function card(p){
   return '<article class="card">'+(p.agotado?'<span class="tag out">Agotado</span>':(p.tag?'<span class="tag">'+esc(p.tag)+'</span>':''))+
    '<button class="fav" type="button" data-fav="'+esc(p.id)+'" aria-pressed="'+favs.has(p.id)+'" aria-label="Guardar en favoritos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20s-7-4.4-9.2-9A5 5 0 0 1 12 6a5 5 0 0 1 9.2 5c-2.2 4.6-9.2 9-9.2 9z"/></svg></button>'+
    '<button class="ph" type="button" data-open="'+esc(p.id)+'" aria-label="Ver '+esc(p.nombre)+'">'+(p.foto?'<img loading="lazy" src="'+esc(p.foto)+'" alt="'+esc(p.nombre)+'" width="400" height="400">':'')+'</button>'+
-   '<div class="info"><button class="name" type="button" data-open="'+esc(p.id)+'">'+esc(p.nombre)+'</button><dl class="cspec"><dt>Marca</dt><dd>'+esc(p.marca||"—")+'</dd><dt>Modelo</dt><dd>'+esc(p.modelo||"—")+'</dd></dl>'+(p.descripcion?'<p class="cdesc">'+esc(shortDesc(p.descripcion))+'</p>':'')+'<div class="price num">'+crc(p.precio)+'<small>Precio final en colones</small></div>'+
+   '<div class="info"><span class="brandl">'+esc(p.marca||"")+'</span>'+(p.modelo?'<span class="cmodel">'+esc(p.modelo)+'</span>':'')+'<button class="name cname" type="button" data-open="'+esc(p.id)+'">'+esc(p.nombre)+'</button><div class="price num">'+crc(p.precio)+'<small>Precio final en colones</small></div>'+
    (p.agotado?'':q?'<div class="qty"><button type="button" data-m="'+esc(p.id)+'" aria-label="Quitar uno">−</button><span>'+q+'</span><button type="button" data-p="'+esc(p.id)+'" aria-label="Agregar uno">+</button></div>':'<button class="add" type="button" data-p="'+esc(p.id)+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Agregar al carrito</button>')+'</div></article>';
 }
 
