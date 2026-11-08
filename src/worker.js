@@ -174,7 +174,7 @@ async function catalog(env) {
   const c = await getCfg(env.DB);
   const prods = (await listCol(env.DB, "productos"))
     .filter((p) => p.nombre && p.visible !== false)
-    .map((p) => ({ id: p.id, nombre: p.nombre, categoria: p.categoria || "", descripcion: p.descripcion || "", foto: fotoUrl(p), precio: precioDe(p, c), agotado: !!p.agotado }))
+    .map((p) => ({ id: p.id, nombre: p.nombre, modelo: p.modelo || "", categoria: p.categoria || "", descripcion: p.descripcion || "", foto: fotoUrl(p), precio: precioDe(p, c), agotado: !!p.agotado }))
     .sort((a, b) => (a.categoria + a.nombre).localeCompare(b.categoria + b.nombre, "es"));
   const store = { nombre: c.nombre, whatsapp: c.whatsapp, prefijo: c.prefijo || "PH", envios: c.envios, pagos: c.pagos };
   return json({ store, productos: prods }, 200, { "cache-control": "public, max-age=30" });
@@ -241,7 +241,11 @@ async function admin(req, env, path) {
     if (data.cfg) { await putDoc(db, "tienda", "config", { ...DEFAULT_CFG, ...data.cfg }); n++; }
     for (const c of COLS.filter((x) => x !== "clientes")) for (const d of Array.isArray(data[c]) ? data[c] : []) {
       const { id, _u, ...rest } = d;
-      await putDoc(db, c, String(id || newId()), rest); n++;
+      const key = String(id || newId());
+      // merge mode only adds or updates the fields sent, keeping prices, photos and stock already saved
+      const prev = data.merge ? await getDoc(db, c, key) : null;
+      if (data.merge && !prev) continue;
+      await putDoc(db, c, key, prev ? { ...prev, ...rest } : rest); n++;
     }
     return json({ ok: true, importados: n });
   }
