@@ -163,6 +163,7 @@ section{margin-top:34px}
 
 /* catalog */
 .shop{display:grid;grid-template-columns:250px minmax(0,1fr);gap:22px;align-items:start}
+.shop>div{min-width:0}
 .filters{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:18px;display:grid;gap:20px;position:sticky;top:150px;max-height:calc(100vh - 170px);overflow:auto}
 .filters h3{margin:0 0 8px;font-family:var(--f-display);font-weight:600;font-size:16px}
 .fl{display:grid;gap:4px}
@@ -171,6 +172,19 @@ section{margin-top:34px}
 .fl label span{margin-left:auto;font-size:11.5px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:0 7px}
 .pr{display:flex;gap:8px;align-items:center}
 .pr input{width:100%;min-width:0;border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:#fff}
+.rng{position:relative;height:30px;margin:6px 4px 2px}
+.rng .trk{position:absolute;left:0;right:0;top:13px;height:4px;border-radius:2px;background:var(--line)}
+.rng .trk i{position:absolute;top:0;bottom:0;background:var(--iris);border-radius:2px}
+.rng input{position:absolute;left:-2px;right:-2px;width:calc(100% + 4px);top:5px;margin:0;-webkit-appearance:none;appearance:none;background:none;pointer-events:none;height:20px}
+.rng input::-webkit-slider-thumb{-webkit-appearance:none;pointer-events:auto;width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid var(--iris);box-shadow:0 1px 4px rgba(0,0,0,.2);cursor:pointer}
+.rng input::-moz-range-thumb{pointer-events:auto;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--iris);cursor:pointer}
+.rng input::-moz-range-track{background:none}
+.rlab{font-weight:700;font-size:14px;margin:4px 0 8px}
+.pbar{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:-4px 0 14px;align-items:center}
+.pbar b{font-size:13px;color:var(--muted);white-space:nowrap;margin-right:2px}
+.pbar button{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 13px;font-size:13px;font-weight:700;cursor:pointer}
+.pbar button:hover{border-color:var(--iris)}
+.pbar button[aria-pressed="true"]{background:var(--brand);color:#fff;border-color:var(--brand)}
 .clear{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px;font-weight:700;cursor:pointer}
 .tools{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
 .tools .chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
@@ -408,15 +422,21 @@ footer button.fl2:hover,footer a:hover{color:#fff}
     <div class="shop">
       <aside class="filters" id="filters" aria-label="Filtros">
         <div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">Filtrar</h3><button class="x fclose" type="button" id="fclose" aria-label="Cerrar filtros" hidden>✕</button></div>
+        <div><h3>Precio</h3>
+          <div class="rng" id="rng"><div class="trk"><i id="rfill"></i></div><input type="range" id="rmin" aria-label="Precio mínimo" step="500"><input type="range" id="rmax" aria-label="Precio máximo" step="500"></div>
+          <div class="rlab num" id="rlab">₡0 – ₡0</div>
+          <div class="pr"><input id="pmin" inputmode="numeric" placeholder="Mínimo" aria-label="Precio mínimo en colones"><span>–</span><input id="pmax" inputmode="numeric" placeholder="Máximo" aria-label="Precio máximo en colones"></div>
+          <div class="fl" id="f-price" style="margin-top:10px"></div>
+        </div>
         <div><h3>Categoría</h3><div class="fl" id="f-cat"></div></div>
         <div><h3>Marca</h3><div class="fl" id="f-brand"></div></div>
-        <div><h3>Precio (₡)</h3><div class="pr"><input id="pmin" inputmode="numeric" placeholder="Mínimo" aria-label="Precio mínimo"><span>–</span><input id="pmax" inputmode="numeric" placeholder="Máximo" aria-label="Precio máximo"></div></div>
         <label class="fl" style="display:flex;gap:10px;align-items:center;font-size:14px;cursor:pointer"><input type="checkbox" id="f-fav" style="accent-color:var(--iris);width:16px;height:16px"> Solo mis favoritos</label>
         <button class="clear" type="button" id="fclear">Limpiar filtros</button>
       </aside>
       <div>
         <div class="tools"><div class="chips"><button class="fbtn" type="button" id="fopen">Filtros</button><span id="chips" class="chips"></span></div>
           <select id="sort" aria-label="Ordenar"><option value="rel">Más relevantes</option><option value="pa">Precio: menor a mayor</option><option value="pd">Precio: mayor a menor</option><option value="az">Nombre A–Z</option></select></div>
+        <div class="pbar" id="pbar" aria-label="Filtrar por precio"></div>
         <div class="grid" id="grid"></div>
         <div class="more" id="more" hidden><button class="btn2" type="button">Ver más productos</button></div>
       </div>
@@ -520,15 +540,47 @@ function renderShop(){
   if(F.min||F.max)chips.push(['price','', (F.min?crc(+F.min):"₡0")+" – "+(F.max?crc(+F.max):"más")]);
   if(F.q)chips.push(['q','','“'+F.q+'”']);if(F.fav)chips.push(['fav','','Favoritos']);
   $("#chips").innerHTML=chips.map(([t,v,l])=>'<button class="chip" type="button" data-chip="'+t+'" data-v="'+esc(v)+'">'+esc(l)+' ✕</button>').join("");
-  $$("[data-chip]").forEach(b=>b.addEventListener("click",()=>{const t=b.dataset.chip,v=b.dataset.v;if(t==="cat")F.cats.delete(v);if(t==="brand")F.brands.delete(v);if(t==="price"){F.min=F.max="";$("#pmin").value=$("#pmax").value=""}if(t==="q"){F.q="";$("#q").value=""}if(t==="fav"){F.fav=false;$("#f-fav").checked=false}syncFilters();renderShop()}));
+  $$("[data-chip]").forEach(b=>b.addEventListener("click",()=>{const t=b.dataset.chip,v=b.dataset.v;if(t==="cat")F.cats.delete(v);if(t==="brand")F.brands.delete(v);if(t==="price"){F.min=F.max="";$("#pmin").value=$("#pmax").value="";syncPrice()}if(t==="q"){F.q="";$("#q").value=""}if(t==="fav"){F.fav=false;$("#f-fav").checked=false}syncFilters();renderShop()}));
 }
 function syncFilters(){
   $$("#f-cat input").forEach(i=>i.checked=F.cats.has(i.value));$$("#f-brand input").forEach(i=>i.checked=F.brands.has(i.value));
 }
-function clearFilters(){F.cats.clear();F.brands.clear();F.min=F.max=F.q="";F.fav=false;$("#pmin").value=$("#pmax").value=$("#q").value="";$("#f-fav").checked=false;syncFilters();renderShop()}
+function clearFilters(){F.cats.clear();F.brands.clear();F.min=F.max=F.q="";F.fav=false;$("#pmin").value=$("#pmax").value=$("#q").value="";$("#f-fav").checked=false;syncFilters();syncPrice();renderShop()}
 function goShop(){document.getElementById("tienda").scrollIntoView({behavior:"smooth"})}
 function showCat(c){F.cats=new Set([c]);F.brands.clear();F.shown=24;syncFilters();renderShop();closeMega();goShop()}
 function showBrand(b){F.brands=new Set([b]);F.cats.clear();F.shown=24;syncFilters();renderShop();goShop()}
+
+/* ---------- price filter ---------- */
+let PMAX=0;
+const RANGES=[["Menos de ₡10.000",0,9999],["₡10.000 – ₡20.000",10000,20000],["₡20.000 – ₡30.000",20000,30000],["Más de ₡30.000",30000,""]];
+function setPrice(min,max,fromSlider){
+  F.min=min===""||min==null?"":String(Math.max(0,+min));F.max=max===""||max==null?"":String(+max);F.shown=24;
+  syncPrice(fromSlider);renderShop();
+}
+function syncPrice(fromSlider){
+  if(!PMAX)return;
+  const lo=F.min===""?0:+F.min, hi=F.max===""?PMAX:Math.min(+F.max,PMAX);
+  if(!fromSlider){$("#rmin").value=lo;$("#rmax").value=hi}
+  $("#rfill").style.left=(lo/PMAX*100)+"%";$("#rfill").style.right=(100-hi/PMAX*100)+"%";
+  $("#rlab").textContent=crc(lo)+" – "+(F.max===""?crc(PMAX)+"+":crc(hi));
+  if(document.activeElement!==$("#pmin"))$("#pmin").value=F.min;if(document.activeElement!==$("#pmax"))$("#pmax").value=F.max;
+  const act=i=>{const r=RANGES[i];return String(r[1]||"")===String(F.min||"")&&String(r[2])===String(F.max)};
+  $$("[data-pr]").forEach(b=>b.setAttribute("aria-pressed",act(+b.dataset.pr)));
+  $$("[data-prf]").forEach(i=>i.checked=act(+i.dataset.prf));
+}
+function initPrice(){
+  PMAX=Math.ceil(Math.max(...PRODUCTS.map(p=>p.precio),1000)/1000)*1000;
+  ["rmin","rmax"].forEach(id=>{const r=$("#"+id);r.min=0;r.max=PMAX});
+  const cnt=([,a,b])=>PRODUCTS.filter(p=>p.precio>=a&&(b===""||p.precio<=b)).length;
+  $("#pbar").innerHTML='<b>Precio:</b>'+RANGES.map((r,i)=>cnt(r)?'<button type="button" data-pr="'+i+'" aria-pressed="false">'+r[0]+'</button>':'').join("");
+  $("#f-price").innerHTML=RANGES.map((r,i)=>cnt(r)?'<label><input type="radio" name="prr" data-prf="'+i+'">'+r[0]+'<span>'+cnt(r)+'</span></label>':'').join("");
+  $$("[data-pr]").forEach(b=>b.addEventListener("click",()=>{const r=RANGES[+b.dataset.pr];b.getAttribute("aria-pressed")==="true"?setPrice("",""):setPrice(r[1]||"",r[2])}));
+  $$("[data-prf]").forEach(i=>i.addEventListener("change",()=>{const r=RANGES[+i.dataset.prf];setPrice(r[1]||"",r[2])}));
+  const slide=()=>{let a=+$("#rmin").value,b=+$("#rmax").value;if(a>b-500){if(document.activeElement===$("#rmin"))a=b-500;else b=a+500;$("#rmin").value=a;$("#rmax").value=b}
+    F.min=a>0?String(a):"";F.max=b<PMAX?String(b):"";syncPrice(true);clearTimeout(slide.t);slide.t=setTimeout(()=>{F.shown=24;renderShop()},120)};
+  $("#rmin").addEventListener("input",slide);$("#rmax").addEventListener("input",slide);
+  syncPrice();
+}
 
 /* ---------- page sections ---------- */
 function renderAll(){
@@ -547,7 +599,7 @@ function renderAll(){
   $("#rail2").innerHTML=top.filter(p=>p.precio<=30000&&p.precio>=8000&&["Audífonos","Parlantes","Relojes","Gaming","Iluminación","Moto"].includes(p.categoria)).slice(0,10).map(card).join("");
   $("#pay-list").innerHTML=STORE.pagos.map(x=>'<li>'+esc(x)+'</li>').join("");
   $("#ship-list").innerHTML=STORE.envios.map(e=>'<li>'+esc(e.n)+': '+(e.c?crc(e.c):"gratis")+'</li>').join("");
-  renderHero();renderShop();
+  initPrice();renderHero();renderShop();
   $$("[data-cat]").forEach(b=>b.addEventListener("click",()=>showCat(b.dataset.cat)));
   $$("[data-brand]").forEach(b=>b.addEventListener("click",()=>showBrand(b.dataset.brand)));
   $$("[data-mcat]").forEach(b=>{b.addEventListener("mouseenter",()=>{$$("[data-mcat]").forEach(x=>x.classList.toggle("on",x===b));megaPanel(b.dataset.mcat)});b.addEventListener("click",()=>showCat(b.dataset.mcat))});
@@ -705,7 +757,7 @@ function bind(root){
 new MutationObserver(()=>bind(document)).observe(document.body,{childList:true,subtree:true});
 $("#more button").addEventListener("click",()=>{F.shown+=24;renderShop()});
 $("#sort").addEventListener("change",e=>{F.sort=e.target.value;renderShop()});
-let pt;["pmin","pmax"].forEach(id=>$("#"+id).addEventListener("input",e=>{clearTimeout(pt);pt=setTimeout(()=>{F[id==="pmin"?"min":"max"]=e.target.value.replace(/\D/g,"");renderShop()},300)}));
+let pt;["pmin","pmax"].forEach(id=>$("#"+id).addEventListener("input",e=>{clearTimeout(pt);pt=setTimeout(()=>{F[id==="pmin"?"min":"max"]=e.target.value.replace(/\D/g,"");F.shown=24;syncPrice();renderShop()},300)}));
 $("#f-fav").addEventListener("change",e=>{F.fav=e.target.checked;renderShop()});
 $("#fclear").addEventListener("click",clearFilters);
 $("#fopen").addEventListener("click",()=>{$("#filters").classList.add("open");$("#fclose").hidden=false});
